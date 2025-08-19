@@ -2,6 +2,11 @@
 node_modules/
 vendor/
 
+# IDE settings
+.vscode/
+.idea/
+.vs/
+
 # testing
 coverage/
 
