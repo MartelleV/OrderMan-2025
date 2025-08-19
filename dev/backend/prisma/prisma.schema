@@ -7,7 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Enums for better type safety
 enum OrderStatus {
   pending
   accepted
@@ -34,10 +33,9 @@ enum PaymentMethod {
   cash
 }
 
-// Customer model
 model Customer {
   id          Int     @id @default(autoincrement())
-  uid         String? @unique // Optional external identifier
+  uid         String? @unique
   name        String
   address     String
   phone       String
@@ -45,38 +43,36 @@ model Customer {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  // Relationships
+
   orders Order[]
 
   @@map("customers")
 }
 
-// Product model
+
 model Product {
   id          Int      @id @default(autoincrement())
-  uid         String?  @unique // Optional external identifier
+  uid         String?  @unique
   name        String
   description String
-  price       Decimal  @db.Decimal(10, 2) // Using Decimal for precise money handling
+  price       Decimal  @db.Decimal(10, 2)
   image       String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  // Relationships
   orderItems OrderItem[]
 
   @@map("products")
 }
 
-// Order model
 model Order {
   id                  Int           @id @default(autoincrement())
-  uid                 String?       @unique // Optional external identifier
+  uid                 String?       @unique
   customerId          Int
-  customerName        String        // Denormalized for historical data
-  customerAddress     String        // Denormalized for historical data
-  customerPhone       String        // Denormalized for historical data
-  customerBankAccount String?       // Denormalized for historical data
+  customerName        String
+  customerAddress     String
+  customerPhone       String
+  customerBankAccount String?
   totalAmount         Decimal       @db.Decimal(10, 2)
   status              OrderStatus   @default(pending)
   method              PaymentMethod
@@ -84,7 +80,6 @@ model Order {
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @updatedAt
 
-  // Relationships
   customer   Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
   items      OrderItem[]
   invoice    Invoice?
@@ -92,29 +87,26 @@ model Order {
   @@map("orders")
 }
 
-// OrderItem model (normalized from embedded object)
 model OrderItem {
   id        Int     @id @default(autoincrement())
   orderId   Int
-  productId Int?    // Optional reference to Product
-  name      String  // Denormalized for historical data
+  productId Int?
+  name      String
   quantity  Int
-  price     Decimal @db.Decimal(10, 2) // Denormalized for historical data
+  price     Decimal @db.Decimal(10, 2)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Relationships
   order   Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
 
   @@map("order_items")
 }
 
-// Invoice model
 model Invoice {
   id        Int           @id @default(autoincrement())
-  uid       String?       @unique // Optional external identifier
-  orderId   Int           @unique // One-to-one with Order
+  uid       String?       @unique
+  orderId   Int           @unique
   date      DateTime      @default(now())
   amount    Decimal       @db.Decimal(10, 2)
   status    InvoiceStatus @default(pending)
@@ -122,17 +114,15 @@ model Invoice {
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
 
-  // Relationships
   order    Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
   payments Payment[]
 
   @@map("invoices")
 }
 
-// Payment model
 model Payment {
   id        Int           @id @default(autoincrement())
-  uid       String?       @unique // Optional external identifier
+  uid       String?       @unique
   invoiceId Int
   amount    Decimal       @db.Decimal(10, 2)
   date      DateTime      @default(now())
@@ -141,7 +131,6 @@ model Payment {
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
 
-  // Relationships
   invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
   @@map("payments")
