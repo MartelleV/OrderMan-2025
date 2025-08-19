@@ -1,0 +1,148 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums for better type safety
+enum OrderStatus {
+  pending
+  accepted
+  paid
+  shipped
+  closed
+}
+
+enum InvoiceStatus {
+  pending
+  issued
+  paid
+}
+
+enum PaymentStatus {
+  pending
+  completed
+  failed
+}
+
+enum PaymentMethod {
+  bank
+  card
+  cash
+}
+
+// Customer model
+model Customer {
+  id          Int     @id @default(autoincrement())
+  uid         String? @unique // Optional external identifier
+  name        String
+  address     String
+  phone       String
+  bankAccount String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  orders Order[]
+
+  @@map("customers")
+}
+
+// Product model
+model Product {
+  id          Int      @id @default(autoincrement())
+  uid         String?  @unique // Optional external identifier
+  name        String
+  description String
+  price       Decimal  @db.Decimal(10, 2) // Using Decimal for precise money handling
+  image       String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  orderItems OrderItem[]
+
+  @@map("products")
+}
+
+// Order model
+model Order {
+  id                  Int           @id @default(autoincrement())
+  uid                 String?       @unique // Optional external identifier
+  customerId          Int
+  customerName        String        // Denormalized for historical data
+  customerAddress     String        // Denormalized for historical data
+  customerPhone       String        // Denormalized for historical data
+  customerBankAccount String?       // Denormalized for historical data
+  totalAmount         Decimal       @db.Decimal(10, 2)
+  status              OrderStatus   @default(pending)
+  method              PaymentMethod
+  orderDate           DateTime      @default(now())
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  // Relationships
+  customer   Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  items      OrderItem[]
+  invoice    Invoice?
+
+  @@map("orders")
+}
+
+// OrderItem model (normalized from embedded object)
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  orderId   Int
+  productId Int?    // Optional reference to Product
+  name      String  // Denormalized for historical data
+  quantity  Int
+  price     Decimal @db.Decimal(10, 2) // Denormalized for historical data
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  order   Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@map("order_items")
+}
+
+// Invoice model
+model Invoice {
+  id        Int           @id @default(autoincrement())
+  uid       String?       @unique // Optional external identifier
+  orderId   Int           @unique // One-to-one with Order
+  date      DateTime      @default(now())
+  amount    Decimal       @db.Decimal(10, 2)
+  status    InvoiceStatus @default(pending)
+  method    PaymentMethod
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  // Relationships
+  order    Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  payments Payment[]
+
+  @@map("invoices")
+}
+
+// Payment model
+model Payment {
+  id        Int           @id @default(autoincrement())
+  uid       String?       @unique // Optional external identifier
+  invoiceId Int
+  amount    Decimal       @db.Decimal(10, 2)
+  date      DateTime      @default(now())
+  status    PaymentStatus @default(pending)
+  method    PaymentMethod
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  // Relationships
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}

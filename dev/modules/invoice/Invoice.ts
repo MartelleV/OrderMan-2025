@@ -4,7 +4,7 @@ export interface InvoiceData {
 	date: Date;
 	amount: number;
 	status: 'pending' | 'issued' | 'paid';
-	paymentMethod: 'bank' | 'card' | 'cash';
+	method: 'bank' | 'card' | 'cash';
 	uid?: string;
 }
 
@@ -14,7 +14,7 @@ export class Invoice {
 	date: Date;
 	amount: number;
 	status: 'pending' | 'issued' | 'paid';
-	paymentMethod: 'bank' | 'card' | 'cash';
+	method: 'bank' | 'card' | 'cash';
 	uid?: string;
 
 	constructor(data: InvoiceData) {
@@ -23,7 +23,7 @@ export class Invoice {
 		this.date = data.date;
 		this.amount = data.amount;
 		this.status = data.status;
-		this.paymentMethod = data.paymentMethod;
+		this.method = data.method;
 		this.uid = data.uid;
 	}
 }

@@ -1,5 +1,6 @@
 export interface OrderItem {
 	id: number;
+	productId?: number;
 	name: string;
 	quantity: number;
 	price: number;
@@ -15,7 +16,7 @@ export interface OrderData {
 	items: OrderItem[];
 	totalAmount: number;
 	status: 'pending' | 'accepted' | 'paid' | 'shipped' | 'closed';
-	paymentMethod: 'bank' | 'card' | 'cash';
+	method: 'bank' | 'card' | 'cash'; // Changed from paymentMethod
 	orderDate: Date;
 	uid?: string;
 }
@@ -30,7 +31,7 @@ export class Order {
 	items: OrderItem[];
 	totalAmount: number;
 	status: 'pending' | 'accepted' | 'paid' | 'shipped' | 'closed';
-	paymentMethod: 'bank' | 'card' | 'cash';
+	method: 'bank' | 'card' | 'cash'; // Changed from paymentMethod
 	orderDate: Date;
 	uid?: string;
 
@@ -44,7 +45,7 @@ export class Order {
 		this.items = data.items;
 		this.totalAmount = data.totalAmount;
 		this.status = data.status;
-		this.paymentMethod = data.paymentMethod;
+		this.method = data.method; // Updated
 		this.orderDate = data.orderDate;
 		this.uid = data.uid;
 	}
