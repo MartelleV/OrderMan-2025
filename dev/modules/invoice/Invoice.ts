@@ -5,8 +5,8 @@ export interface InvoiceData {
 	amount: number;
 	status: 'pending' | 'issued' | 'paid';
 	method: 'bank' | 'card' | 'cash';
-	createdAt: Date;
-	updatedAt: Date;
+	createdAt?: Date;
+	updatedAt?: Date;
 }
 
 export class Invoice {
@@ -26,7 +26,7 @@ export class Invoice {
 		this.amount = data.amount;
 		this.status = data.status;
 		this.method = data.method;
-		this.createdAt = data.createdAt;
-		this.updatedAt = data.updatedAt;
+		this.createdAt = data.createdAt || new Date();
+		this.updatedAt = data.updatedAt || new Date();
 	}
 }

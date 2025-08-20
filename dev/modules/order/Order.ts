@@ -19,9 +19,9 @@ export interface OrderData {
 	totalAmount: number;
 	status: 'pending' | 'accepted' | 'paid' | 'shipped' | 'closed';
 	method: 'bank' | 'card' | 'cash';
-	orderDate: Date;
-	createdAt: Date;
-	updatedAt: Date;
+	orderDate?: Date;
+	createdAt?: Date;
+	updatedAt?: Date;
 	items: OrderItem[];
 }
 
@@ -50,9 +50,9 @@ export class Order {
 		this.totalAmount = data.totalAmount;
 		this.status = data.status;
 		this.method = data.method;
-		this.orderDate = data.orderDate;
-		this.createdAt = data.createdAt;
-		this.updatedAt = data.updatedAt;
+		this.orderDate = data.orderDate || new Date();
+		this.createdAt = data.createdAt || new Date();
+		this.updatedAt = data.updatedAt || new Date();
 		this.items = data.items;
 	}
 }
