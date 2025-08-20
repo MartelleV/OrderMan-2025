@@ -9,13 +9,19 @@ class OrderService {
 	private createOrderFromRecord(orderRecord: any): Order {
 		const order = new Order({
 			...orderRecord,
-			customerBankAccount: orderRecord.customerBankAccount || undefined,
+			// Map customer data from relation
+			customerName: orderRecord.customer?.name || '',
+			customerAddress: orderRecord.customer?.address || '',
+			customerPhone: orderRecord.customer?.phone || '',
+			customerBankAccount: orderRecord.customer?.bankAccount || undefined,
 			totalAmount: Number(orderRecord.totalAmount),
 			items:
 				orderRecord.items?.map((item: any) => ({
 					...item,
 					productId: item.productId || undefined,
-					price: Number(item.price),
+					// Map product data from relation
+					name: item.product?.name || '',
+					price: Number(item.unitPrice), // Map unitPrice to price for interface compatibility
 				})) || [],
 		});
 		DomModel.addOrder(order);
@@ -44,6 +50,7 @@ class OrderService {
 	}
 
 	async createOrder(data: OrderData): Promise<Order> {
+		// Verify customer exists
 		let customer = DomModel.getCustomerById(data.customerId);
 		if (!customer) {
 			customer = await this.getCustomerFromDatabase(data.customerId);
@@ -54,13 +61,40 @@ class OrderService {
 			}
 		}
 
-		const { id, items, createdAt, updatedAt, ...orderCreateData } = data;
+		// Verify all products exist
+		const productIds = data.items
+			.map(item => item.productId)
+			.filter(id => id !== undefined);
+		if (productIds.length > 0) {
+			const products = await prisma.product.findMany({
+				where: { id: { in: productIds as number[] } },
+			});
+
+			if (products.length !== productIds.length) {
+				throw new Error('One or more products not found');
+			}
+		}
+
+		const {
+			id,
+			items,
+			createdAt,
+			updatedAt,
+			customerName,
+			customerAddress,
+			customerPhone,
+			customerBankAccount,
+			...orderCreateData
+		} = data;
 
 		const orderRecord = await prisma.order.create({
 			data: {
 				...orderCreateData,
 				status: 'pending',
 				orderDate: data.orderDate || new Date(),
+			},
+			include: {
+				customer: true,
 			},
 		});
 
@@ -71,12 +105,19 @@ class OrderService {
 					orderId: existingOrderId,
 					createdAt: itemCreatedAt,
 					updatedAt: itemUpdatedAt,
+					name,
+					price,
 					...itemCreateData
 				} = item;
 				return prisma.orderItem.create({
 					data: {
 						orderId: orderRecord.id,
-						...itemCreateData,
+						productId: item.productId || 0, // Handle case where productId might be undefined
+						quantity: item.quantity,
+						unitPrice: item.price, // Map price to unitPrice for database
+					},
+					include: {
+						product: true,
 					},
 				});
 			})
@@ -93,7 +134,14 @@ class OrderService {
 		if (!order) {
 			const orderRecord = await prisma.order.findUnique({
 				where: { id: orderId },
-				include: { items: true },
+				include: {
+					customer: true,
+					items: {
+						include: {
+							product: true,
+						},
+					},
+				},
 			});
 			if (orderRecord) {
 				order = this.createOrderFromRecord(orderRecord);
@@ -105,7 +153,14 @@ class OrderService {
 	async getOrdersByCustomer(customerId: number): Promise<Order[]> {
 		const orderRecords = await prisma.order.findMany({
 			where: { customerId },
-			include: { items: true },
+			include: {
+				customer: true,
+				items: {
+					include: {
+						product: true,
+					},
+				},
+			},
 			orderBy: { createdAt: 'desc' },
 		});
 		return orderRecords.map(record => this.createOrderFromRecord(record));
@@ -116,11 +171,28 @@ class OrderService {
 		update: Partial<OrderData>
 	): Promise<Order | null> {
 		try {
-			const { id, items, createdAt, updatedAt, ...updateData } = update;
+			const {
+				id,
+				items,
+				createdAt,
+				updatedAt,
+				customerName,
+				customerAddress,
+				customerPhone,
+				customerBankAccount,
+				...updateData
+			} = update;
 			const orderRecord = await prisma.order.update({
 				where: { id: orderId },
 				data: updateData,
-				include: { items: true },
+				include: {
+					customer: true,
+					items: {
+						include: {
+							product: true,
+						},
+					},
+				},
 			});
 			return this.createOrderFromRecord(orderRecord);
 		} catch (error) {
