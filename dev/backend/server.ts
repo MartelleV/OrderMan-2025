@@ -5,7 +5,6 @@ import orderRoutes from './order/OrderRoutes';
 import productRoutes from './product/ProductRoutes';
 import customerRoutes from './customer/CustomerRoutes';
 import invoiceRoutes from './invoice/InvoiceRoutes';
-import './BackendMain';
 import cors from 'cors';
 
 const app = express();
@@ -16,7 +15,7 @@ app.use(
 		origin: [
 			'http://localhost:5172',
 			'http://localhost:5173',
-			'http://localhost:5174'
+			'http://localhost:5174',
 		],
 		credentials: true,
 	})
