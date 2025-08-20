@@ -8,11 +8,7 @@ import {
 	signInWithEmailAndPassword,
 	signOut,
 } from '../firebase';
-import {
-	doc,
-	getDoc,
-	setDoc,
-} from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import DomModel from '../../modules/DomModel';
 
 class CustomerService {
@@ -82,7 +78,7 @@ class CustomerService {
 			items,
 			totalAmount,
 			status: 'pending',
-			paymentMethod,
+			method: paymentMethod,
 			orderDate: new Date(),
 		};
 		return await this.orderService.createOrder(orderData);

@@ -31,7 +31,7 @@ class PaymentService {
 			date: new Date(),
 			amount: invoice.amount,
 			status: 'pending',
-			method: invoice.paymentMethod,
+			method: invoice.method,
 		});
 		const docRef = await addDoc(collection(db, 'payment'), { ...payment });
 		payment.uid = docRef.id;

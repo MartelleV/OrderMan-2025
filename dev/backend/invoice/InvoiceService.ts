@@ -1,7 +1,16 @@
-import {Invoice, InvoiceData} from '../../modules/invoice/Invoice';
+import { Invoice, InvoiceData } from '../../modules/invoice/Invoice';
 import OrderService from '../order/OrderService';
-import {db} from '../firebase';
-import {addDoc, collection, deleteDoc, doc, getDocs, query, updateDoc, where,} from 'firebase/firestore';
+import { db } from '../firebase';
+import {
+	addDoc,
+	collection,
+	deleteDoc,
+	doc,
+	getDocs,
+	query,
+	updateDoc,
+	where,
+} from 'firebase/firestore';
 import DomModel from '../../modules/DomModel';
 
 class InvoiceService {
@@ -40,7 +49,7 @@ class InvoiceService {
 			const invoice = new Invoice(invoiceData);
 			invoice.uid = doc.id;
 			DomModel.addInvoice(invoice);
-			return {uid: doc.id, ...invoiceData};
+			return { uid: doc.id, ...invoiceData };
 		});
 	}
 
@@ -91,7 +100,7 @@ class InvoiceService {
 			date: new Date(),
 			amount: order.totalAmount,
 			status: 'pending',
-			paymentMethod: order.paymentMethod,
+			method: order.method,
 		};
 		const invoice = new Invoice(invoiceData);
 
