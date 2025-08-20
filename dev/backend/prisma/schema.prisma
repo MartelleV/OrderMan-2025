@@ -35,7 +35,6 @@ enum PaymentMethod {
 
 model Customer {
   id          Int     @id @default(autoincrement())
-  uid         String? @unique
   name        String
   address     String
   phone       String
@@ -52,7 +51,6 @@ model Customer {
 
 model Product {
   id          Int      @id @default(autoincrement())
-  uid         String?  @unique
   name        String
   description String
   price       Decimal  @db.Decimal(10, 2)
@@ -67,7 +65,6 @@ model Product {
 
 model Order {
   id                  Int           @id @default(autoincrement())
-  uid                 String?       @unique
   customerId          Int
   customerName        String
   customerAddress     String
@@ -105,7 +102,6 @@ model OrderItem {
 
 model Invoice {
   id        Int           @id @default(autoincrement())
-  uid       String?       @unique
   orderId   Int           @unique
   date      DateTime      @default(now())
   amount    Decimal       @db.Decimal(10, 2)
@@ -122,7 +118,6 @@ model Invoice {
 
 model Payment {
   id        Int           @id @default(autoincrement())
-  uid       String?       @unique
   invoiceId Int
   amount    Decimal       @db.Decimal(10, 2)
   date      DateTime      @default(now())
