@@ -1,3 +1,4 @@
+import dotenv from 'dotenv';
 import express from 'express';
 import bodyParser from 'body-parser';
 import paymentRoutes from './src/payment/PaymentRoutes';
@@ -7,8 +8,11 @@ import customerRoutes from './src/customer/CustomerRoutes';
 import invoiceRoutes from './src/invoice/InvoiceRoutes';
 import cors from 'cors';
 
+// Load environment variables
+dotenv.config();
+
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 app.use(
 	cors({
