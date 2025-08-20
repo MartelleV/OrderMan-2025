@@ -1,6 +1,7 @@
 import Customer from '../../../modules/customer/Customer';
 import express from 'express';
 import CustomerController from './CustomerController';
+import { PrismaClient } from '@prisma/client';
 
 const router = express.Router();
 const dummyCustomer = new Customer(
@@ -14,7 +15,7 @@ const controller = new CustomerController(dummyCustomer);
 
 router.post('/orders', async (req, res) => {
 	try {
-		const { items, paymentMethod } = req.body;
+		const { items, paymentMethod, customerId } = req.body;
 
 		if (!items || !Array.isArray(items)) {
 			return res.status(400).json({ error: 'Missing or invalid items' });
@@ -25,7 +26,33 @@ router.post('/orders', async (req, res) => {
 				.json({ error: 'Invalid or missing payment method' });
 		}
 
-		const result = await controller.createOrder(items, paymentMethod);
+		// Use provided customer ID or default to dummy customer
+		let orderController = controller;
+		if (customerId) {
+			try {
+				// Create a customer instance for the provided ID
+				const prisma = new PrismaClient();
+				const customerRecord = await prisma.customer.findUnique({
+					where: { id: parseInt(customerId) }
+				});
+				
+				if (customerRecord) {
+					const customerInstance = new Customer(
+						customerRecord.id,
+						customerRecord.name,
+						customerRecord.address,
+						customerRecord.phone,
+						customerRecord.bankAccount || ''
+					);
+					orderController = new CustomerController(customerInstance);
+				}
+				await prisma.$disconnect();
+			} catch (customerErr) {
+				console.warn('Could not find customer, using dummy customer:', customerErr);
+			}
+		}
+
+		const result = await orderController.createOrder(items, paymentMethod);
 		res.json(result);
 	} catch (err) {
 		console.error(err);
