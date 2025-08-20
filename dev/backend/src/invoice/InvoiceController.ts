@@ -1,4 +1,4 @@
-import { Invoice, InvoiceData } from '../../modules/invoice/Invoice';
+import { Invoice, InvoiceData } from '../../../modules/invoice/Invoice';
 import InvoiceService from './InvoiceService';
 
 class InvoiceController {
@@ -33,6 +33,10 @@ class InvoiceController {
 
 	async sendInvoice(orderId: number): Promise<Invoice | null> {
 		return this.invoiceService.sendInvoice(orderId);
+	}
+
+	async getAllInvoices(): Promise<Invoice[]> {
+		return this.invoiceService.getAllInvoices();
 	}
 }
 

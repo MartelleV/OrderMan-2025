@@ -4,6 +4,15 @@ import PaymentController from './PaymentController';
 const router = express.Router();
 const controller = new PaymentController();
 
+router.get('/', async (req, res) => {
+	try {
+		const payments = await controller.getAllPayments();
+		res.json(payments);
+	} catch (err) {
+		res.status(500).json({ error: 'Failed to get payments' });
+	}
+});
+
 router.post('/', async (req, res) => {
 	const payment = await controller.makePayment(req.body);
 	res.status(201).json(payment);

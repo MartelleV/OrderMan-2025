@@ -1,6 +1,6 @@
-import { Invoice } from '../../modules/invoice/Invoice';
-import { Order } from '../../modules/order/Order';
-import { Payment, PaymentData } from '../../modules/payment/Payment';
+import { Invoice } from '../../../modules/invoice/Invoice';
+import { Order } from '../../../modules/order/Order';
+import { Payment, PaymentData } from '../../../modules/payment/Payment';
 import PaymentService from './PaymentService';
 
 class PaymentController {
@@ -39,6 +39,10 @@ class PaymentController {
 		order: Order;
 	}> {
 		return this.paymentService.acceptPayment(paymentId);
+	}
+
+	async getAllPayments(): Promise<Payment[]> {
+		return this.paymentService.getAllPayments();
 	}
 }
 

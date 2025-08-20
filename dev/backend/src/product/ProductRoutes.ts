@@ -4,6 +4,15 @@ import ProductController from './ProductController';
 const router = express.Router();
 const controller = new ProductController();
 
+router.post('/', async (req, res) => {
+	try {
+		const product = await controller.createProduct(req.body);
+		res.status(201).json(product);
+	} catch (err) {
+		res.status(500).json({ error: 'Failed to create product' });
+	}
+});
+
 router.get('/', async (req, res) => {
 	try {
 		const products = await controller.fetchProducts();
@@ -36,6 +45,19 @@ router.put('/:id', async (req, res) => {
 		res.json(updated);
 	} catch (err) {
 		res.status(500).json({ error: 'Failed to update product' });
+	}
+});
+
+router.delete('/:id', async (req, res) => {
+	try {
+		const deleted = await controller.deleteProduct(Number(req.params.id));
+		if (deleted) {
+			res.status(204).end();
+		} else {
+			res.status(404).json({ error: 'Product not found' });
+		}
+	} catch (err) {
+		res.status(500).json({ error: 'Failed to delete product' });
 	}
 });
 

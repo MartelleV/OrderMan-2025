@@ -1,4 +1,4 @@
-import {Product} from '../../modules/product/Product';
+import { Product } from '../../../modules/product/Product';
 import ProductService from './ProductService';
 
 class ProductController {
@@ -47,6 +47,29 @@ class ProductController {
 			return updatedProduct;
 		} catch (error) {
 			console.error('Error updating product:', error);
+			throw error;
+		}
+	}
+
+	async createProduct(data: {
+		name: string;
+		description: string;
+		price: number;
+		image: string;
+	}): Promise<Product> {
+		try {
+			return await this.productService.createProduct(data);
+		} catch (error) {
+			console.error('Error creating product:', error);
+			throw error;
+		}
+	}
+
+	async deleteProduct(productId: number): Promise<boolean> {
+		try {
+			return await this.productService.deleteProduct(productId);
+		} catch (error) {
+			console.error('Error deleting product:', error);
 			throw error;
 		}
 	}

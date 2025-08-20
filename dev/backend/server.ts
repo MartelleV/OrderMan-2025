@@ -1,10 +1,10 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import paymentRoutes from './payment/PaymentRoutes';
-import orderRoutes from './order/OrderRoutes';
-import productRoutes from './product/ProductRoutes';
-import customerRoutes from './customer/CustomerRoutes';
-import invoiceRoutes from './invoice/InvoiceRoutes';
+import paymentRoutes from './src/payment/PaymentRoutes';
+import orderRoutes from './src/order/OrderRoutes';
+import productRoutes from './src/product/ProductRoutes';
+import customerRoutes from './src/customer/CustomerRoutes';
+import invoiceRoutes from './src/invoice/InvoiceRoutes';
 import cors from 'cors';
 
 const app = express();

@@ -4,6 +4,15 @@ import InvoiceController from './InvoiceController';
 const router = express.Router();
 const controller = new InvoiceController();
 
+router.get('/', async (req, res) => {
+	try {
+		const invoices = await controller.getAllInvoices();
+		res.json(invoices);
+	} catch (err) {
+		res.status(500).json({ error: 'Failed to get invoices' });
+	}
+});
+
 router.post('/', async (req, res) => {
 	try {
 		const invoice = await controller.createInvoice(req.body);

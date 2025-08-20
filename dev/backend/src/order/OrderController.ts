@@ -1,4 +1,4 @@
-import { Order, OrderData } from '../../modules/order/Order';
+import { Order, OrderData } from '../../../modules/order/Order';
 import OrderService from './OrderService';
 
 class OrderController {
@@ -41,6 +41,10 @@ class OrderController {
 
 	async closeOrder(orderId: number): Promise<Order | null> {
 		return this.orderService.updateOrderStatus(orderId, 'closed');
+	}
+
+	async getAllOrders(): Promise<Order[]> {
+		return this.orderService.getAllOrders();
 	}
 }
 
