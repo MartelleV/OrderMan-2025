@@ -1,24 +1,29 @@
 export class Customer {
-	uid?: string;
 	id: number;
 	name: string;
 	address: string;
 	phone: string;
 	bankAccount?: string;
-	orders: number[]; // Store order IDs instead of full OrderData
+	createdAt: Date;
+	updatedAt: Date;
+	orders: number[];
 
 	constructor(
 		id: number,
 		name: string,
 		address: string,
 		phone: string,
-		bankAccount: string
+		bankAccount?: string,
+		createdAt?: Date,
+		updatedAt?: Date
 	) {
 		this.id = id;
 		this.name = name;
 		this.address = address;
 		this.phone = phone;
-		this.bankAccount = bankAccount ?? null;
+		this.bankAccount = bankAccount;
+		this.createdAt = createdAt || new Date();
+		this.updatedAt = updatedAt || new Date();
 		this.orders = [];
 	}
 }

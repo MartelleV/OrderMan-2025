@@ -5,7 +5,8 @@ export interface PaymentData {
 	date: Date;
 	status: 'pending' | 'completed' | 'failed';
 	method: 'bank' | 'card' | 'cash';
-	uid?: string;
+	createdAt: Date;
+	updatedAt: Date;
 }
 
 export class Payment {
@@ -15,7 +16,8 @@ export class Payment {
 	date: Date;
 	status: 'pending' | 'completed' | 'failed';
 	method: 'bank' | 'card' | 'cash';
-	uid?: string;
+	createdAt: Date;
+	updatedAt: Date;
 
 	constructor(data: PaymentData) {
 		this.id = data.id;
@@ -24,6 +26,7 @@ export class Payment {
 		this.date = data.date;
 		this.status = data.status;
 		this.method = data.method;
-		this.uid = data.uid;
+		this.createdAt = data.createdAt;
+		this.updatedAt = data.updatedAt;
 	}
 }

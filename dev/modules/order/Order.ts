@@ -1,9 +1,12 @@
 export interface OrderItem {
 	id: number;
+	orderId: number;
 	productId?: number;
 	name: string;
 	quantity: number;
-	price: number;
+	price: number; // Using number for compatibility, but should be handled as Decimal in database
+	createdAt: Date;
+	updatedAt: Date;
 }
 
 export interface OrderData {
@@ -13,12 +16,13 @@ export interface OrderData {
 	customerAddress: string;
 	customerPhone: string;
 	customerBankAccount?: string;
-	items: OrderItem[];
 	totalAmount: number;
 	status: 'pending' | 'accepted' | 'paid' | 'shipped' | 'closed';
-	method: 'bank' | 'card' | 'cash'; // Changed from paymentMethod
+	method: 'bank' | 'card' | 'cash';
 	orderDate: Date;
-	uid?: string;
+	createdAt: Date;
+	updatedAt: Date;
+	items: OrderItem[];
 }
 
 export class Order {
@@ -28,12 +32,13 @@ export class Order {
 	customerAddress: string;
 	customerPhone: string;
 	customerBankAccount?: string;
-	items: OrderItem[];
 	totalAmount: number;
 	status: 'pending' | 'accepted' | 'paid' | 'shipped' | 'closed';
-	method: 'bank' | 'card' | 'cash'; // Changed from paymentMethod
+	method: 'bank' | 'card' | 'cash';
 	orderDate: Date;
-	uid?: string;
+	createdAt: Date;
+	updatedAt: Date;
+	items: OrderItem[];
 
 	constructor(data: OrderData) {
 		this.id = data.id;
@@ -42,11 +47,12 @@ export class Order {
 		this.customerAddress = data.customerAddress;
 		this.customerPhone = data.customerPhone;
 		this.customerBankAccount = data.customerBankAccount;
-		this.items = data.items;
 		this.totalAmount = data.totalAmount;
 		this.status = data.status;
-		this.method = data.method; // Updated
+		this.method = data.method;
 		this.orderDate = data.orderDate;
-		this.uid = data.uid;
+		this.createdAt = data.createdAt;
+		this.updatedAt = data.updatedAt;
+		this.items = data.items;
 	}
 }

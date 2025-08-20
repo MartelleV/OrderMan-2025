@@ -4,20 +4,25 @@ export class Product {
 	description: string;
 	price: number;
 	image: string;
-	uid?: string;
+	createdAt: Date;
+	updatedAt: Date;
 
 	constructor(
 		id: number,
 		name: string,
 		description: string,
 		price: number,
-		image: string
+		image: string,
+		createdAt?: Date,
+		updatedAt?: Date
 	) {
 		this.id = id;
 		this.name = name;
 		this.description = description;
 		this.price = price;
 		this.image = image;
+		this.createdAt = createdAt || new Date();
+		this.updatedAt = updatedAt || new Date();
 	}
 }
 
