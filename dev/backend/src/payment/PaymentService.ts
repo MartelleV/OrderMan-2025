@@ -18,22 +18,38 @@ class PaymentService {
 		return payment;
 	}
 
-	async makePayment(invoiceId: number): Promise<Payment> {
-		let invoice = DomModel.getInvoiceById(invoiceId);
+	async makePayment(paymentData: PaymentData): Promise<Payment> {
+		// Find the invoice
+		const invoice = await prisma.invoice.findUnique({
+			where: { id: paymentData.invoiceId },
+			include: { order: true },
+		});
+
 		if (!invoice) {
-			const invoiceService = new InvoiceService();
-			invoice = await invoiceService.getInvoice(invoiceId);
-			if (!invoice) throw new Error('Invoice not found');
+			throw new Error('Invoice not found');
 		}
 
+		// Create payment record
 		const paymentRecord = await prisma.payment.create({
 			data: {
-				invoiceId: invoice.id,
-				amount: invoice.amount,
+				invoiceId: paymentData.invoiceId,
+				amount: paymentData.amount,
 				date: new Date(),
-				status: 'pending',
-				method: invoice.method,
+				status: 'completed', // Simple: payment is immediately completed
+				method: paymentData.method,
 			},
+		});
+
+		// Simple logic: Update order status to "paid"
+		await prisma.order.update({
+			where: { id: invoice.orderId },
+			data: { status: 'paid' },
+		});
+
+		// Update invoice status to "paid"
+		await prisma.invoice.update({
+			where: { id: paymentData.invoiceId },
+			data: { status: 'paid' },
 		});
 
 		return this.createPaymentFromRecord(paymentRecord);

@@ -72,31 +72,26 @@ class InvoiceService {
 	}
 
 	async sendInvoice(orderId: number): Promise<Invoice | null> {
-		let order = DomModel.getOrderById(orderId);
-		if (!order) {
-			const orderService = new OrderService();
-			order = await orderService.getOrder(orderId);
-			if (!order) throw new Error('Order not found');
-		}
-
+		// Find existing invoice for this order
 		const existingInvoice = await prisma.invoice.findUnique({
 			where: { orderId },
 		});
-		if (existingInvoice) {
-			throw new Error('Invoice already exists for this order');
+
+		if (!existingInvoice) {
+			throw new Error('No invoice found for this order');
 		}
 
-		const invoiceRecord = await prisma.invoice.create({
-			data: {
-				orderId: order.id,
-				date: new Date(),
-				amount: order.totalAmount,
-				status: 'issued',
-				method: order.method,
-			},
+		if (existingInvoice.status === 'issued') {
+			throw new Error('Invoice already sent');
+		}
+
+		// Simply update status to "issued"
+		const updatedInvoice = await prisma.invoice.update({
+			where: { orderId },
+			data: { status: 'issued' },
 		});
 
-		return this.createInvoiceFromRecord(invoiceRecord);
+		return this.createInvoiceFromRecord(updatedInvoice);
 	}
 
 	async getAllInvoices(): Promise<Invoice[]> {

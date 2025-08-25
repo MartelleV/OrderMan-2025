@@ -10,8 +10,8 @@ class PaymentController {
 		this.paymentService = new PaymentService();
 	}
 
-	async makePayment(invoiceId: number): Promise<Payment> {
-		return this.paymentService.makePayment(invoiceId);
+	async makePayment(paymentData: PaymentData): Promise<Payment> {
+		return this.paymentService.makePayment(paymentData);
 	}
 
 	async getPayment(paymentId: number): Promise<Payment | null> {

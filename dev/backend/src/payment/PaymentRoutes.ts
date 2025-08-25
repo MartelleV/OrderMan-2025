@@ -14,8 +14,13 @@ router.get('/', async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
-	const payment = await controller.makePayment(req.body);
-	res.status(201).json(payment);
+	try {
+		const payment = await controller.makePayment(req.body);
+		res.status(201).json(payment);
+	} catch (err) {
+		console.error('Payment creation error:', err);
+		res.status(500).json({ error: 'Failed to create payment' });
+	}
 });
 
 router.get('/:id', async (req, res) => {
