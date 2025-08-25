@@ -10,15 +10,24 @@ const prisma = new PrismaClient();
 
 class PaymentService {
 	private createPaymentFromRecord(record: any): Payment {
-		const payment = new Payment({
-			...record,
-			amount: Number(record.amount),
-		});
-		DomModel.addPayment(payment);
-		return payment;
+		console.log(`[PaymentService] Creating payment instance from record: ID=${record.id}`);
+		try {
+			const payment = new Payment({
+				...record,
+				amount: Number(record.amount),
+			});
+			console.log(`[PaymentService] Payment instance created successfully: ID=${payment.id}, Amount=${payment.amount}`);
+			DomModel.addPayment(payment);
+			return payment;
+		} catch (error) {
+			console.error(`[PaymentService] Error creating payment from record:`, error);
+			throw error;
+		}
 	}
 
 	async makePayment(paymentData: PaymentData): Promise<Payment> {
+		console.log(`[PaymentService] Processing new payment: InvoiceID=${paymentData.invoiceId}, Amount=${paymentData.amount}`);
+		
 		// Find the invoice
 		const invoice = await prisma.invoice.findUnique({
 			where: { id: paymentData.invoiceId },
@@ -26,10 +35,13 @@ class PaymentService {
 		});
 
 		if (!invoice) {
+			console.error(`[PaymentService] Invoice not found: ID=${paymentData.invoiceId}`);
 			throw new Error('Invoice not found');
 		}
+		console.log(`[PaymentService] Found invoice: ID=${invoice.id}, OrderID=${invoice.orderId}`);
 
 		// Create payment record
+		console.log(`[PaymentService] Creating payment record in database`);
 		const paymentRecord = await prisma.payment.create({
 			data: {
 				invoiceId: paymentData.invoiceId,

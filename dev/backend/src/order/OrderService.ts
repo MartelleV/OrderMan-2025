@@ -7,25 +7,35 @@ const prisma = new PrismaClient();
 
 class OrderService {
 	private createOrderFromRecord(orderRecord: any): Order {
-		const order = new Order({
-			...orderRecord,
-			// Map customer data from relation
-			customerName: orderRecord.customer?.name || '',
-			customerAddress: orderRecord.customer?.address || '',
-			customerPhone: orderRecord.customer?.phone || '',
-			customerBankAccount: orderRecord.customer?.bankAccount || undefined,
-			totalAmount: Number(orderRecord.totalAmount),
-			items:
-				orderRecord.items?.map((item: any) => ({
-					...item,
-					productId: item.productId || undefined,
-					// Map product data from relation
-					name: item.product?.name || '',
-					price: Number(item.unitPrice), // Map unitPrice to price for interface compatibility
-				})) || [],
-		});
-		DomModel.addOrder(order);
-		return order;
+		console.log(`[OrderService] Creating order instance from record: ID=${orderRecord.id}`);
+		try {
+			const order = new Order({
+				...orderRecord,
+				// Map customer data from relation
+				customerName: orderRecord.customer?.name || '',
+				customerAddress: orderRecord.customer?.address || '',
+				customerPhone: orderRecord.customer?.phone || '',
+				customerBankAccount: orderRecord.customer?.bankAccount || undefined,
+				totalAmount: Number(orderRecord.totalAmount),
+				items:
+					orderRecord.items?.map((item: any) => {
+						console.log(`[OrderService] Processing order item: OrderID=${orderRecord.id}, ProductID=${item.productId}`);
+						return {
+							...item,
+							productId: item.productId || undefined,
+							// Map product data from relation
+							name: item.product?.name || '',
+							price: Number(item.unitPrice), // Map unitPrice to price for interface compatibility
+						};
+					}) || [],
+			});
+			console.log(`[OrderService] Order instance created successfully: ID=${order.id}, Customer=${order.customerName}, Items=${order.items.length}`);
+			DomModel.addOrder(order);
+			return order;
+		} catch (error) {
+			console.error(`[OrderService] Error creating order from record:`, error);
+			throw error;
+		}
 	}
 
 	private async getCustomerFromDatabase(
@@ -50,13 +60,18 @@ class OrderService {
 	}
 
 	async createOrder(data: OrderData): Promise<Order> {
+		console.log(`[OrderService] Creating new order: CustomerID=${data.customerId}, Items=${data.items.length}`);
+		
 		// Verify customer exists
 		let customer = DomModel.getCustomerById(data.customerId);
 		if (!customer) {
+			console.log(`[OrderService] Customer not found in cache, fetching from database: ID=${data.customerId}`);
 			customer = await this.getCustomerFromDatabase(data.customerId);
 			if (customer) {
+				console.log(`[OrderService] Customer found in database, adding to cache: ID=${customer.id}`);
 				DomModel.addCustomer(customer);
 			} else {
+				console.error(`[OrderService] Customer not found in database: ID=${data.customerId}`);
 				throw new Error('Customer not found');
 			}
 		}
@@ -65,14 +80,18 @@ class OrderService {
 		const productIds = data.items
 			.map(item => item.productId)
 			.filter(id => id !== undefined);
+		
 		if (productIds.length > 0) {
+			console.log(`[OrderService] Verifying products exist: ProductIDs=${productIds.join(',')}`);
 			const products = await prisma.product.findMany({
 				where: { id: { in: productIds as number[] } },
 			});
 
 			if (products.length !== productIds.length) {
+				console.error(`[OrderService] Some products not found. Expected=${productIds.length}, Found=${products.length}`);
 				throw new Error('One or more products not found');
 			}
+			console.log(`[OrderService] All products verified successfully`);
 		}
 
 		const {
