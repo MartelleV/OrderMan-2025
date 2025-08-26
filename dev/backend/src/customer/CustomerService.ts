@@ -16,17 +16,24 @@ class CustomerService {
 	}
 
 	private createCustomerFromRecord(record: any): Customer {
-		const customer = new Customer(
-			record.id,
-			record.name,
-			record.address,
-			record.phone,
-			record.bankAccount || undefined,
-			record.createdAt,
-			record.updatedAt
-		);
-		DomModel.addCustomer(customer);
-		return customer;
+		console.log(`[CustomerService] Creating customer instance from record: ID=${record.id}`);
+		try {
+			const customer = new Customer(
+				record.id,
+				record.name,
+				record.address,
+				record.phone,
+				record.bankAccount || undefined,
+				record.createdAt,
+				record.updatedAt
+			);
+			console.log(`[CustomerService] Customer instance created successfully: ID=${customer.id}, Name=${customer.name}`);
+			DomModel.addCustomer(customer);
+			return customer;
+		} catch (error) {
+			console.error(`[CustomerService] Error creating customer from record:`, error);
+			throw error;
+		}
 	}
 
 	async createCustomer(data: {
@@ -35,8 +42,15 @@ class CustomerService {
 		phone: string;
 		bankAccount?: string;
 	}): Promise<Customer> {
-		const customerRecord = await prisma.customer.create({ data });
-		return this.createCustomerFromRecord(customerRecord);
+		console.log(`[CustomerService] Creating new customer in database:`, data);
+		try {
+			const customerRecord = await prisma.customer.create({ data });
+			console.log(`[CustomerService] Customer created in database successfully: ID=${customerRecord.id}`);
+			return this.createCustomerFromRecord(customerRecord);
+		} catch (error) {
+			console.error(`[CustomerService] Error creating customer in database:`, error);
+			throw error;
+		}
 	}
 
 	async getCustomer(customerId: number): Promise<Customer | null> {
