@@ -224,7 +224,7 @@ const Dashboard: React.FC = () => {
         return (
           <div className="text-center">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Welcome to Demo System
+              Welcome to OrderMan
             </h2>
             <p className="text-gray-600 mb-6">
               Please log in to access the system

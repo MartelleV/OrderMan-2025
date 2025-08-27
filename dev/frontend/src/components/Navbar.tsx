@@ -71,7 +71,7 @@ const Navbar: React.FC = () => {
           {/* Logo */}
           <div className="flex items-center space-x-4">
             <Link to="/" className="text-xl font-bold text-gray-900">
-              Demo System
+              OrderMan
             </Link>
           </div>
 
@@ -133,4 +133,3 @@ const Navbar: React.FC = () => {
 };
 
 export default Navbar;
-
