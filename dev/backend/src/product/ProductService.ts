@@ -6,37 +6,58 @@ const prisma = new PrismaClient();
 
 class ProductService {
 	private createProductFromRecord(record: any): Product {
-		const product = new Product(
-			record.id,
-			record.name,
-			record.description,
-			Number(record.price),
-			record.image,
-			record.createdAt,
-			record.updatedAt
-		);
-		DomModel.addProduct(product);
-		return product;
+		console.log(`[ProductService] Creating product instance from record: ID=${record.id}`);
+		try {
+			const product = new Product(
+				record.id,
+				record.name,
+				record.description,
+				Number(record.price),
+				record.image,
+				record.createdAt,
+				record.updatedAt
+			);
+			console.log(`[ProductService] Product instance created successfully: ID=${product.id}, Name=${product.name}, Price=${product.price}`);
+			DomModel.addProduct(product);
+			return product;
+		} catch (error) {
+			console.error(`[ProductService] Error creating product from record:`, error);
+			throw error;
+		}
 	}
 
 	async fetchProducts(): Promise<Product[]> {
-		const productRecords = await prisma.product.findMany({
-			orderBy: { createdAt: 'desc' },
-		});
-		return productRecords.map(record =>
-			this.createProductFromRecord(record)
-		);
+		console.log(`[ProductService] Fetching all products`);
+		try {
+			const productRecords = await prisma.product.findMany({
+				orderBy: { createdAt: 'desc' },
+			});
+			console.log(`[ProductService] Found ${productRecords.length} products in database`);
+			return productRecords.map(record =>
+				this.createProductFromRecord(record)
+			);
+		} catch (error) {
+			console.error(`[ProductService] Error fetching products:`, error);
+			throw error;
+		}
 	}
 
 	async fetchProductDetails(productId: number): Promise<Product | null> {
+		console.log(`[ProductService] Fetching product details: ID=${productId}`);
 		let product = DomModel.getProductById(productId);
 		if (!product) {
+			console.log(`[ProductService] Product not found in cache, fetching from database: ID=${productId}`);
 			const productRecord = await prisma.product.findUnique({
 				where: { id: productId },
 			});
 			if (productRecord) {
+				console.log(`[ProductService] Product found in database: ID=${productId}`);
 				product = this.createProductFromRecord(productRecord);
+			} else {
+				console.log(`[ProductService] Product not found in database: ID=${productId}`);
 			}
+		} else {
+			console.log(`[ProductService] Product found in cache: ID=${productId}`);
 		}
 		return product || null;
 	}

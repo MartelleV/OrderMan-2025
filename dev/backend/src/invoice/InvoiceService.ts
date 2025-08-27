@@ -7,28 +7,49 @@ const prisma = new PrismaClient();
 
 class InvoiceService {
 	private createInvoiceFromRecord(record: any): Invoice {
-		const invoice = new Invoice({
-			...record,
-			amount: Number(record.amount),
-		});
-		DomModel.addInvoice(invoice);
-		return invoice;
+		console.log(`[InvoiceService] Creating invoice instance from record: ID=${record.id}`);
+		try {
+			const invoice = new Invoice({
+				...record,
+				amount: Number(record.amount),
+			});
+			console.log(`[InvoiceService] Invoice instance created successfully: ID=${invoice.id}, Amount=${invoice.amount}`);
+			DomModel.addInvoice(invoice);
+			return invoice;
+		} catch (error) {
+			console.error(`[InvoiceService] Error creating invoice from record:`, error);
+			throw error;
+		}
 	}
 
 	async createInvoice(data: InvoiceData): Promise<Invoice> {
-		const invoiceRecord = await prisma.invoice.create({ data });
-		return this.createInvoiceFromRecord(invoiceRecord);
+		console.log(`[InvoiceService] Creating new invoice: OrderID=${data.orderId}, Amount=${data.amount}`);
+		try {
+			const invoiceRecord = await prisma.invoice.create({ data });
+			console.log(`[InvoiceService] Invoice created in database successfully: ID=${invoiceRecord.id}`);
+			return this.createInvoiceFromRecord(invoiceRecord);
+		} catch (error) {
+			console.error(`[InvoiceService] Error creating invoice in database:`, error);
+			throw error;
+		}
 	}
 
 	async getInvoice(invoiceId: number): Promise<Invoice | null> {
+		console.log(`[InvoiceService] Fetching invoice: ID=${invoiceId}`);
 		let invoice = DomModel.getInvoiceById(invoiceId);
 		if (!invoice) {
+			console.log(`[InvoiceService] Invoice not found in cache, fetching from database: ID=${invoiceId}`);
 			const invoiceRecord = await prisma.invoice.findUnique({
 				where: { id: invoiceId },
 			});
 			if (invoiceRecord) {
+				console.log(`[InvoiceService] Invoice found in database: ID=${invoiceId}`);
 				invoice = this.createInvoiceFromRecord(invoiceRecord);
+			} else {
+				console.log(`[InvoiceService] Invoice not found in database: ID=${invoiceId}`);
 			}
+		} else {
+			console.log(`[InvoiceService] Invoice found in cache: ID=${invoiceId}`);
 		}
 		return invoice || null;
 	}
