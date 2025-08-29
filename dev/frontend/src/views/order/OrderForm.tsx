@@ -189,6 +189,19 @@ const OrderForm: React.FC<OrderFormProps> = ({
     return items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   };
 
+  // Get available products for a specific dropdown (excluding already selected products)
+  const getAvailableProducts = (currentIndex: number) => {
+    const selectedProductIds = items
+      .map((item, index) =>
+        index !== currentIndex ? item.productId : undefined
+      )
+      .filter((id) => id !== undefined);
+
+    return products.filter(
+      (product) => !selectedProductIds.includes(product.id)
+    );
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -292,7 +305,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
                           <SelectValue placeholder="Select product" />
                         </SelectTrigger>
                         <SelectContent>
-                          {products.map((product) => (
+                          {getAvailableProducts(index).map((product) => (
                             <SelectItem
                               key={product.id}
                               value={product.id.toString()}
