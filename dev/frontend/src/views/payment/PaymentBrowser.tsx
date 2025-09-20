@@ -62,7 +62,7 @@ const PaymentBrowser: React.FC<PaymentBrowserProps> = ({
       let filteredPayments = response.data;
       if (userRole === "customer" && userId) {
         // For customers, only show their own payments
-        // We'll need to fetch invoices first to check ownership
+        // We'll need to fetch invoices and orders first to check ownership
         const invoiceIds = [
           ...new Set(response.data.map((payment) => payment.invoiceId)),
         ];
@@ -70,12 +70,22 @@ const PaymentBrowser: React.FC<PaymentBrowserProps> = ({
         const invoiceResponses = await Promise.allSettled(invoicePromises);
 
         const customerInvoiceIds = new Set<number>();
-        invoiceResponses.forEach((result, index) => {
+        
+        // Get orders for each invoice to check customer ownership
+        for (let i = 0; i < invoiceResponses.length; i++) {
+          const result = invoiceResponses[i];
           if (result.status === "fulfilled" && result.value.data) {
-            // We'll check order ownership through invoice->order->customer relationship
-            customerInvoiceIds.add(invoiceIds[index]);
+            const invoice = result.value.data;
+            try {
+              const orderResponse = await orderApi.getById(invoice.orderId);
+              if (orderResponse.data && orderResponse.data.customerId === userId) {
+                customerInvoiceIds.add(invoiceIds[i]);
+              }
+            } catch (orderErr) {
+              console.warn(`Could not fetch order ${invoice.orderId}:`, orderErr);
+            }
           }
-        });
+        }
 
         filteredPayments = response.data.filter((payment) =>
           customerInvoiceIds.has(payment.invoiceId)

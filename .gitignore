@@ -37,3 +37,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+dev/demo-workflow.js
+dev/SOLUTION_SUMMARY.md
+.gitignore
+dev/test-workflow.md

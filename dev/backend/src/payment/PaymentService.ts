@@ -10,24 +10,33 @@ const prisma = new PrismaClient();
 
 class PaymentService {
 	private createPaymentFromRecord(record: any): Payment {
-		console.log(`[PaymentService] Creating payment instance from record: ID=${record.id}`);
+		console.log(
+			`[PaymentService] Creating payment instance from record: ID=${record.id}`
+		);
 		try {
 			const payment = new Payment({
 				...record,
 				amount: Number(record.amount),
 			});
-			console.log(`[PaymentService] Payment instance created successfully: ID=${payment.id}, Amount=${payment.amount}`);
+			console.log(
+				`[PaymentService] Payment instance created successfully: ID=${payment.id}, Amount=${payment.amount}`
+			);
 			DomModel.addPayment(payment);
 			return payment;
 		} catch (error) {
-			console.error(`[PaymentService] Error creating payment from record:`, error);
+			console.error(
+				`[PaymentService] Error creating payment from record:`,
+				error
+			);
 			throw error;
 		}
 	}
 
 	async makePayment(paymentData: PaymentData): Promise<Payment> {
-		console.log(`[PaymentService] Processing new payment: InvoiceID=${paymentData.invoiceId}, Amount=${paymentData.amount}`);
-		
+		console.log(
+			`[PaymentService] Processing new payment: InvoiceID=${paymentData.invoiceId}, Amount=${paymentData.amount}`
+		);
+
 		// Find the invoice
 		const invoice = await prisma.invoice.findUnique({
 			where: { id: paymentData.invoiceId },
@@ -35,10 +44,14 @@ class PaymentService {
 		});
 
 		if (!invoice) {
-			console.error(`[PaymentService] Invoice not found: ID=${paymentData.invoiceId}`);
+			console.error(
+				`[PaymentService] Invoice not found: ID=${paymentData.invoiceId}`
+			);
 			throw new Error('Invoice not found');
 		}
-		console.log(`[PaymentService] Found invoice: ID=${invoice.id}, OrderID=${invoice.orderId}`);
+		console.log(
+			`[PaymentService] Found invoice: ID=${invoice.id}, OrderID=${invoice.orderId}`
+		);
 
 		// Create payment record
 		console.log(`[PaymentService] Creating payment record in database`);
@@ -47,22 +60,12 @@ class PaymentService {
 				invoiceId: paymentData.invoiceId,
 				amount: paymentData.amount,
 				date: new Date(),
-				status: 'completed', // Simple: payment is immediately completed
+				status: 'pending', // Payment starts as pending and requires accountant approval
 				method: paymentData.method,
 			},
 		});
 
-		// Simple logic: Update order status to "paid"
-		await prisma.order.update({
-			where: { id: invoice.orderId },
-			data: { status: 'paid' },
-		});
-
-		// Update invoice status to "paid"
-		await prisma.invoice.update({
-			where: { id: paymentData.invoiceId },
-			data: { status: 'paid' },
-		});
+		// Note: Order and invoice status will be updated when accountant accepts the payment
 
 		return this.createPaymentFromRecord(paymentRecord);
 	}
