@@ -26,6 +26,16 @@ app.use(
 );
 
 app.use(bodyParser.json());
+
+// Health check endpoint
+app.get('/api/ping', (req, res) => {
+    res.status(200).json({
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        message: 'Server is healthy'
+    });
+});
+
 app.use('/api/payments', paymentRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/products', productRoutes);
