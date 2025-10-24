@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { Order, OrderData } from '../../../modules/order/Order';
 import { Customer } from '../../../modules/customer/Customer';
 import DomModel from '../../../modules/DomModel';
@@ -106,12 +106,23 @@ class OrderService {
 			...orderCreateData
 		} = data;
 
+		// Ensure totalAmount is present and converted to Prisma.Decimal
+		const computedTotal =
+			(orderCreateData as any).totalAmount ?? data.totalAmount ??
+			items.reduce((total, item) => total + Number(item.price || 0) * Number(item.quantity || 0), 0);
+
+		// Explicitly build the create payload so required DB fields are always provided
+		const orderCreatePayload: any = {
+			customerId: data.customerId,
+			totalAmount: new Prisma.Decimal(computedTotal.toFixed ? computedTotal.toFixed(2) : String(computedTotal)),
+			status: 'pending',
+			orderDate: data.orderDate || new Date(),
+			// `method` in Prisma schema. Prefer `method` from data, but fall back to any incoming `paymentMethod`
+			method: (data as any).method ?? (orderCreateData as any).method ?? (orderCreateData as any).paymentMethod ?? (data as any).paymentMethod,
+		};
+
 		const orderRecord = await prisma.order.create({
-			data: {
-				...orderCreateData,
-				status: 'pending',
-				orderDate: data.orderDate || new Date(),
-			},
+			data: orderCreatePayload,
 			include: {
 				customer: true,
 			},
